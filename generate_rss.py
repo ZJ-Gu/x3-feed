@@ -4,6 +4,7 @@
 输出 rss.xml 到仓库根目录，由 GitHub Pages / jsDelivr 托管。"""
 from xml.sax.saxutils import escape
 from datetime import datetime, timedelta, timezone
+import random
 
 BASE = "https://zj-gu.github.io/x3-feed"
 CHAPTERS = [
@@ -22,8 +23,9 @@ CN = timezone(timedelta(hours=8))
 def build_rss():
     now = datetime.now(CN)
     n = len(CHAPTERS)
-    today_idx = now.timetuple().tm_yday % n  # 今日轮值章节
-    order = [CHAPTERS[(today_idx + k) % n] for k in range(n)]
+    # 每日随机：以当天日期为种子，同一天内顺序固定，每天重新洗牌
+    order = list(CHAPTERS)
+    random.Random(now.strftime("%Y%m%d")).shuffle(order)
     items = []
     for k, (t, body) in enumerate(order):
         orig_i = CHAPTERS.index((t, body)) + 1
@@ -47,5 +49,6 @@ if __name__ == "__main__":
     out = build_rss()
     with open("rss.xml", "w", encoding="utf-8") as f:
         f.write(out)
-    print("rss.xml written,", len(CHAPTERS), "items, 今日置顶:",
-          CHAPTERS[datetime.now(CN).timetuple().tm_yday % len(CHAPTERS)][0])
+    daily = list(CHAPTERS)
+    random.Random(datetime.now(CN).strftime("%Y%m%d")).shuffle(daily)
+    print("rss.xml written,", len(CHAPTERS), "items, 今日随机置顶:", daily[0][0])
