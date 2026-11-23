@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 import random
 import json
 import os
+import re
 
 BASE = "https://zj-gu.github.io/x3-feed"
 CHAPTERS = [tuple(x) for x in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "chapters.json"), encoding="utf-8"))]
@@ -22,19 +23,25 @@ def build_rss():
     items = []
     for k, (t, body) in enumerate(order):
         orig_i = CHAPTERS.index((t, body)) + 1
+        # 目录标题带首句名句，如「第19章 · 绝圣弃智，民利百倍」
+        first = re.split(r"[。；]", body)[0]
+        if len(first) > 14:
+            first = first[:13] + "…"
         dt = (now - timedelta(hours=k)).strftime("%a, %d %b %Y %H:%M:%S +0800")
         items.append(
-            f"<item><title>道德经 · {escape(t)}</title>"
+            f"<item><title>第{orig_i}章 · {escape(first)}</title>"
             f"<description>{escape(body)}</description>"
             f"<link>{BASE}/#chapter-{orig_i}</link>"
             f"<guid isPermaLink=\"false\">ddj-{orig_i}-{now.strftime('%Y%m%d')}</guid>"
             f"<pubDate>{dt}</pubDate></item>"
         )
+    intro = ("《道德经》每日轮播：道经三十七章、德经四十四章，凡八十一章。"
+             "每日零点从全书中随机撷取十章，经文原文，常读常新。")
     return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<rss version=\"2.0\"><channel>"
-            "<title>道德经 · 每日轮播</title>"
+            "<title>道德经</title>"
             f"<link>{BASE}/</link>"
-            "<description>阅星曈 X3 视界订阅源（公版内容）</description>"
+            f"<description>{escape(intro)}</description>"
             "<language>zh-cn</language>"
             + "".join(items) + "</channel></rss>")
 
