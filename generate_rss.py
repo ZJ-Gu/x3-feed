@@ -25,8 +25,9 @@ def build_rss():
         orig_i = CHAPTERS.index((t, body)) + 1
         # 目录标题带首句名句，如「第19章 · 绝圣弃智，民利百倍」
         first = re.split(r"[。；]", body)[0]
-        if len(first) > 14:
-            first = first[:13] + "…"
+        if len(first) > 16:  # 太长时在逗号/顿号处断，不拦腰砍词
+            cut = max(first.rfind("，", 0, 17), first.rfind("、", 0, 17))
+            first = first[:cut] if cut >= 6 else first[:16]
         dt = (now - timedelta(hours=k)).strftime("%a, %d %b %Y %H:%M:%S +0800")
         items.append(
             f"<item><title>第{orig_i}章 · {escape(first)}</title>"
