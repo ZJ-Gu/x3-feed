@@ -16,31 +16,28 @@ CN = timezone(timedelta(hours=8))
 def build_rss():
     now = datetime.now(CN)
     n = len(CHAPTERS)
-    # 每日随机：以当天日期为种子，同一天内顺序固定，每天重新洗牌
+    # 每日随机一章：以当天日期为种子
     order = list(CHAPTERS)
     random.Random(now.strftime("%Y%m%d")).shuffle(order)
-    order = order[:10]  # 视界卡片轻量展示，每天随机 10 章
+    order = order[:1]
     items = []
     for k, (t, body) in enumerate(order):
         orig_i = CHAPTERS.index((t, body)) + 1
-        # 目录标题带首句名句，如「第19章 · 绝圣弃智，民利百倍」
-        first = re.split(r"[。；]", body)[0]
-        if len(first) > 16:  # 太长时在逗号/顿号处断，不拦腰砍词
-            cut = max(first.rfind("，", 0, 17), first.rfind("、", 0, 17))
-            first = first[:cut] if cut >= 6 else first[:16]
-        dt = (now - timedelta(hours=k)).strftime("%a, %d %b %Y %H:%M:%S +0800")
+        img_url = f"{BASE}/wallpapers/ddj_{orig_i:02d}.jpg"
+        dt = now.strftime("%a, %d %b %Y %H:%M:%S +0800")
         items.append(
-            f"<item><title>第{orig_i}章 · {escape(first)}</title>"
-            f"<description>{escape(body)}</description>"
-            f"<link>{BASE}/#chapter-{orig_i}</link>"
+            f"<item><title>今日一章 · 第{orig_i}章</title>"
+            f"<description><![CDATA[<img src=\"{img_url}\"/><p>{body}</p>]]></description>"
+            f"<enclosure url=\"{img_url}\" type=\"image/jpeg\" length=\"0\"/>"
+            f"<media:content url=\"{img_url}\" type=\"image/jpeg\" medium=\"image\"/>"
+            f"<link>{BASE}/wallpapers/ddj_{orig_i:02d}.jpg</link>"
             f"<guid isPermaLink=\"false\">ddj-{orig_i}-{now.strftime('%Y%m%d')}</guid>"
             f"<pubDate>{dt}</pubDate></item>"
         )
-    intro = ("《道德经》每日轮播：道经三十七章、德经四十四章，凡八十一章。"
-             "每日零点从全书中随机撷取十章，经文原文，常读常新。")
+    intro = "《道德经》每日一章：每天零点从八十一章中随机撷取一章，竖排大字，常读常新。"
     return ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-            "<rss version=\"2.0\"><channel>"
-            "<title>道德经</title>"
+            "<rss version=\"2.0\" xmlns:media=\"http://search.yahoo.com/mrss/\"><channel>"
+            "<title>道德经 · 每日一章</title>"
             f"<link>{BASE}/</link>"
             f"<description>{escape(intro)}</description>"
             "<language>zh-cn</language>"
