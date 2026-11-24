@@ -45,8 +45,9 @@ def build_rss():
 
 if __name__ == "__main__":
     out = build_rss()
-    with open("rss.xml", "w", encoding="utf-8") as f:
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rss.xml")
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(out)
     daily = list(CHAPTERS)
     random.Random(datetime.now(CN).strftime("%Y%m%d")).shuffle(daily)
-    print("rss.xml written, 10/", len(CHAPTERS), "items, 今日随机置顶:", daily[0][0])
+    print("rss.xml written, 1/81 item, 今日随机:", daily[0][0])
